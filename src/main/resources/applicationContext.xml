@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="
+http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+http://www.springframework.org/schema/tx
+       http://www.springframework.org/schema/tx/spring-tx.xsd
+http://www.springframework.org/schema/aop
+       http://www.springframework.org/schema/aop/spring-aop.xsd
+http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <context:property-placeholder location="classpath:database.properties" />
+
+    <!-- - 数据源-->
+    <bean class="org.apache.commons.dbcp.BasicDataSource" id="dataSource">
+        <!--name中的值不能随便写,是BasicDataSource类型中定义号的属性-->
+        <property value="${jdbc.driver}" name="driverClassName"/>
+        <property value="${jdbc.url}" name="url"/>
+        <property value="${jdbc.username}" name="username"/>
+        <property value="${jdbc.password}" name="password"/>
+    </bean>
+    <!-- - sqlSessionFactory-->
+    <bean class="org.mybatis.spring.SqlSessionFactoryBean" id="sqlSessionFactory">
+        <!--注入数据源-->
+        <property name="dataSource" ref="dataSource"/>
+        <!--指定要自定取类型别名的包-->
+        <property name="typeAliasesPackage" value="cn.appsys.pojo" />
+        <!--如果不想在mybatis-config中指定sql映射文件,可以按下面配置来指定 cn/smbms/dao/**/*.xml 其中的 **/*.xml 表示: dao包及子包中的以xml结尾的文件 -->
+        <property value="classpath:cn/appsys/dao/**/*.xml" name="mapperLocations"/>
+    </bean>
+
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory" />
+        <property name="basePackage" value="cn.appsys.dao" />
+    </bean>
+
+
+    <!-- - 事务管理器-->
+    <bean class="org.springframework.jdbc.datasource.DataSourceTransactionManager"
+          id="transactionManager">
+        <!--注入数据源,这样的话,事务管理器才能获取到Connection对象-->
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <!-- - 开启注解式的事务配置-->
+    <tx:annotation-driven transaction-manager="transactionManager" />
+
+    <!-- - spring的组件扫描(主要扫描业务层)-->
+    <context:component-scan base-package="cn.appsys.service" />
+</beans>

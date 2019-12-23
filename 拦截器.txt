@@ -1,0 +1,42 @@
+利用拦截器来实现登录控制功能
+    在preHandler方法,
+       从session获取登录用户
+       如果为 null ,就重定向到 登录 控制器,返回false
+       如果不为 null ,就继续后面 控制器,返回true
+
+1 写一个拦截器
+    要实现HandlerInterceptor接口
+        preHandle 方法
+            进入控制器方法之前执行的代码
+                如果方法返回值为 true 的时候,就会继续执行后面的控制器方法
+                如果方法返回值为 false 的时候,就不能执行后面的控制器方法
+
+        postHandle 方法
+            执行控制器方法处理完请求之后要执行的代码
+
+        afterCompletion
+            整个请求的处理流程都执行完成后要执行的代码
+
+2 配置拦截器
+    在 springmvc-servlet.xml 中配置
+
+     <mvc:interceptors>
+            <!--定义在interceptors里面的拦截器自动对所有请求拦截-->
+            <!--<bean class="cn.appsys.interceptor.LoginInterceptor"></bean>-->
+
+            <mvc:interceptor>
+                <!--要拦截的路径
+                    /*  :  /下面的所有请求
+                    /** : 表示所有目录下所有请求
+                        /index.html
+                        /static/css/jq.js
+                -->
+                <mvc:mapping path="/**"/>
+                <!--要排除的路径-->
+                <mvc:exclude-mapping path="/login.html" />
+                <mvc:exclude-mapping path="/dologin" />
+                <mvc:exclude-mapping path="/statics/**" />
+                <bean class="cn.appsys.interceptor.LoginInterceptor"></bean>
+            </mvc:interceptor>
+
+        </mvc:interceptors>
